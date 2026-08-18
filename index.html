@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>词表</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <script defer src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script defer src="./app.js"></script>
+</head>
+
+<body>
+  <main class="app-shell">
+    <section class="top-panel" aria-label="单词导入和操作">
+      <div class="brand-row">
+        <div>
+          <p class="eyebrow">Ebbinghaus Planner</p>
+          <h1>词表</h1>
+        </div>
+        <div class="stats" aria-live="polite">
+          <span id="totalCount">0 词</span>
+          <span id="todayCount">今日 0</span>
+          <span id="doneCount">已完成 0</span>
+          <span id="dueCount">待复习 0</span>
+        </div>
+      </div>
+
+      <div class="input-grid">
+        <label class="paste-box" for="wordInput">
+          <span>批量粘贴词表</span>
+          <textarea id="wordInput" spellcheck="false"
+            placeholder="serene 宁静的&#10;hesitate 犹豫&#10;reliable 可靠的"></textarea>
+        </label>
+
+        <div class="control-panel">
+          <label class="file-drop" for="fileInput">
+            <i data-lucide="file-up"></i>
+            <span>导入 txt/csv 文件</span>
+            <input id="fileInput" type="file" accept=".txt,.csv,.tsv,text/plain,text/csv" />
+          </label>
+
+          <div class="button-grid">
+            <button id="importBtn" class="secondary-btn" type="button">
+              <i data-lucide="upload"></i>
+              <span>导入粘贴内容</span>
+            </button>
+            <button id="todayBtn" class="secondary-btn" type="button">
+              <i data-lucide="calendar-check"></i>
+              <span>加载今日任务</span>
+            </button>
+            <button id="planBtn" class="secondary-btn" type="button">
+              <i data-lucide="table-2"></i>
+              <span>计划表</span>
+            </button>
+            <button id="themeBtn" class="secondary-btn" type="button" aria-pressed="false">
+              <i data-lucide="moon"></i>
+              <span>夜间模式</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-row">
+        <span id="modeLabel">普通浏览</span>
+        <span id="statusText">每天自动安排 30 个新词，并加入到期复习词</span>
+      </div>
+    </section>
+
+    <section id="taskPanel" class="table-panel task-panel" aria-label="今日任务" hidden>
+      <div class="task-toolbar">
+        <div>
+          <p class="eyebrow">Today</p>
+          <h2>今日任务</h2>
+          <p id="taskSummary">点击加载今日任务后显示</p>
+        </div>
+        <button id="taskDictationBtn" class="gold-btn" type="button">
+          <i data-lucide="pen-line"></i>
+          <span>开始默写</span>
+        </button>
+      </div>
+      <div id="taskGroups" class="task-groups"></div>
+    </section>
+  </main>
+
+  <div id="planModal" class="modal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-plan></div>
+    <section class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="planTitle">
+      <header class="modal-header">
+        <div>
+          <p class="eyebrow">Study Schedule</p>
+          <h2 id="planTitle">艾宾浩斯计划表</h2>
+        </div>
+        <button id="closePlanBtn" class="icon-btn" type="button" aria-label="关闭计划表">
+          <i data-lucide="x"></i>
+        </button>
+      </header>
+
+      <div class="modal-summary">
+        <div class="plan-item">
+          <span>总词数</span>
+          <strong id="modalTotalCount">0</strong>
+        </div>
+        <div class="plan-item">
+          <span>批次数</span>
+          <strong id="modalBatchCount">0</strong>
+        </div>
+        <div class="plan-item">
+          <span>预计结束</span>
+          <strong id="modalEndDate">--</strong>
+        </div>
+        <div class="plan-item">
+          <span>今日剩余</span>
+          <strong id="modalRemainingCount">0</strong>
+        </div>
+      </div>
+
+      <div class="modal-body">
+        <div class="schedule-wrap">
+          <table class="schedule-table">
+            <thead>
+              <tr>
+                <th>No.</th>
+                <th>Date</th>
+                <th>First</th>
+                <th>Day1</th>
+                <th>Day2</th>
+                <th>Day4</th>
+                <th>Day7</th>
+                <th>Day15</th>
+              </tr>
+            </thead>
+            <tbody id="scheduleBody"></tbody>
+          </table>
+        </div>
+
+        <section class="word-list-panel" aria-label="导入单词列表">
+          <div class="section-title">
+            <h3>导入单词</h3>
+            <p id="wordListSummary">按每天 30 个自动分批</p>
+          </div>
+          <div id="batchList" class="batch-list"></div>
+        </section>
+      </div>
+    </section>
+  </div>
+</body>
+
+</html>
