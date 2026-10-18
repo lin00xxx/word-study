@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#f1f1f1" id="themeColorMeta" />
+  <meta name="theme-color" content="#fff7f8" id="themeColorMeta" />
   <title>词表</title>
   <link rel="stylesheet" href="./styles.css" />
   <script defer src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
@@ -28,9 +28,44 @@
         <button class="nav-btn" type="button" data-screen="plan">计划</button>
       </nav>
 
-      <button id="themeBtn" class="icon-btn" type="button" aria-pressed="false" aria-label="切换夜间模式">
-        <i data-lucide="moon" aria-hidden="true"></i>
-      </button>
+      <div class="theme-picker">
+        <button id="themeBtn" class="icon-btn" type="button" aria-haspopup="true" aria-expanded="false"
+          aria-label="切换主题色" title="切换主题色">
+          <i data-lucide="palette" aria-hidden="true"></i>
+        </button>
+        <div id="themeMenu" class="theme-menu" role="menu" aria-label="主题色" hidden>
+          <button class="theme-option" type="button" role="menuitemradio" aria-checked="false" data-theme-option="ink">
+            <span class="theme-swatch swatch-ink" aria-hidden="true"></span>
+            <span>黑</span>
+            <i data-lucide="check" class="theme-check" aria-hidden="true"></i>
+          </button>
+          <button class="theme-option" type="button" role="menuitemradio" aria-checked="false" data-theme-option="paper">
+            <span class="theme-swatch swatch-paper" aria-hidden="true"></span>
+            <span>白</span>
+            <i data-lucide="check" class="theme-check" aria-hidden="true"></i>
+          </button>
+          <button class="theme-option" type="button" role="menuitemradio" aria-checked="true" data-theme-option="rose">
+            <span class="theme-swatch swatch-rose" aria-hidden="true"></span>
+            <span>粉</span>
+            <i data-lucide="check" class="theme-check" aria-hidden="true"></i>
+          </button>
+          <button class="theme-option" type="button" role="menuitemradio" aria-checked="false" data-theme-option="honey">
+            <span class="theme-swatch swatch-honey" aria-hidden="true"></span>
+            <span>黄</span>
+            <i data-lucide="check" class="theme-check" aria-hidden="true"></i>
+          </button>
+          <button class="theme-option" type="button" role="menuitemradio" aria-checked="false" data-theme-option="sky">
+            <span class="theme-swatch swatch-sky" aria-hidden="true"></span>
+            <span>蓝</span>
+            <i data-lucide="check" class="theme-check" aria-hidden="true"></i>
+          </button>
+          <button class="theme-option" type="button" role="menuitemradio" aria-checked="false" data-theme-option="pine">
+            <span class="theme-swatch swatch-pine" aria-hidden="true"></span>
+            <span>绿</span>
+            <i data-lucide="check" class="theme-check" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
     </div>
   </header>
 

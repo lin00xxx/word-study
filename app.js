@@ -1,5 +1,14 @@
 const STORAGE_KEY = "platinum-wordbook-v2";
 const THEME_KEY = "wordbook-theme-v1";
+const THEMES = {
+  ink: { label: "黑", meta: "#0a0a0a" },
+  paper: { label: "白", meta: "#f4f4f4" },
+  rose: { label: "粉", meta: "#fff7f8" },
+  honey: { label: "黄", meta: "#fbf4e2" },
+  sky: { label: "蓝", meta: "#eef2f8" },
+  pine: { label: "绿", meta: "#eff5f0" }
+};
+const DEFAULT_THEME = "rose";
 const LEGACY_KEYS = ["black-gold-wordbook-v1"];
 const DAILY_NEW_LIMIT = 30;
 const LONG_PRESS_MS = 720;
@@ -23,7 +32,8 @@ const state = {
   hiddenIds: new Set(),
   resultById: new Map(),
   draftById: new Map(),
-  taskMetaById: new Map()
+  taskMetaById: new Map(),
+  expandedGroups: new Set()
 };
 
 const els = {};
@@ -48,6 +58,8 @@ function cacheElements() {
   els.importBtn = document.querySelector("#importBtn");
   els.todayBtn = document.querySelector("#todayBtn");
   els.themeBtn = document.querySelector("#themeBtn");
+  els.themeMenu = document.querySelector("#themeMenu");
+  els.themeOptions = [...document.querySelectorAll("[data-theme-option]")];
   els.themeColorMeta = document.querySelector("#themeColorMeta");
   els.navBtns = [...document.querySelectorAll(".nav-btn")];
   els.importScreen = document.querySelector("#importScreen");
@@ -75,10 +87,30 @@ function bindEvents() {
   els.importBtn.addEventListener("click", () => importWordsFromText(els.input.value, "粘贴内容"));
   els.fileInput.addEventListener("change", importWordsFromFile);
   els.todayBtn.addEventListener("click", () => loadTodayTasks(true));
-  els.themeBtn.addEventListener("click", toggleTheme);
+  els.themeBtn.addEventListener("click", (event) => {
+    event.stopPropagation();
+    toggleThemeMenu();
+  });
+  els.themeMenu.addEventListener("click", (event) => {
+    event.stopPropagation();
+    const option = event.target.closest("[data-theme-option]");
+    if (!option) return;
+    setTheme(option.dataset.themeOption);
+    closeThemeMenu();
+  });
+  document.addEventListener("click", (event) => {
+    if (event.target.closest(".theme-picker")) return;
+    closeThemeMenu();
+  });
   els.taskDictationBtn.addEventListener("click", startDictation);
   els.navBtns.forEach((button) => {
     button.addEventListener("click", () => switchScreen(button.dataset.screen));
+  });
+
+  els.taskGroups.addEventListener("click", (event) => {
+    const toggle = event.target.closest("[data-toggle-group]");
+    if (!toggle) return;
+    toggleTaskGroup(toggle.dataset.toggleGroup);
   });
 
   document.addEventListener("input", (event) => {
@@ -92,6 +124,10 @@ function bindEvents() {
     if (!input || event.key !== "Enter") return;
     event.preventDefault();
     submitAnswer(input);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeThemeMenu();
   });
 
   document.addEventListener("click", (event) => {
@@ -128,32 +164,51 @@ function initIcons() {
 }
 
 function loadTheme() {
-  state.theme = localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light";
+  const saved = localStorage.getItem(THEME_KEY) || "";
+  const migrated = saved === "dark" ? "ink" : saved === "light" ? DEFAULT_THEME : saved;
+  state.theme = THEMES[migrated] ? migrated : DEFAULT_THEME;
   applyTheme();
 }
 
-function toggleTheme() {
-  state.theme = state.theme === "dark" ? "light" : "dark";
-  localStorage.setItem(THEME_KEY, state.theme);
+function setTheme(theme) {
+  if (!THEMES[theme]) return;
+  state.theme = theme;
+  localStorage.setItem(THEME_KEY, theme);
   applyTheme();
 }
 
 function applyTheme() {
-  const isDark = state.theme === "dark";
-  document.body.classList.toggle("dark-theme", isDark);
+  const theme = THEMES[state.theme] ? state.theme : DEFAULT_THEME;
+
+  if (document.documentElement.dataset.theme !== theme) {
+    document.documentElement.dataset.theme = theme;
+  }
+
   if (els.themeColorMeta) {
-    els.themeColorMeta.setAttribute("content", isDark ? "#0a0a0a" : "#f1f1f1");
+    els.themeColorMeta.setAttribute("content", THEMES[theme].meta);
   }
-  if (!els.themeBtn) return;
-  els.themeBtn.setAttribute("aria-pressed", isDark ? "true" : "false");
-  els.themeBtn.setAttribute("aria-label", isDark ? "切换到白天模式" : "切换到夜间模式");
-  const label = els.themeBtn.querySelector("span");
-  if (label) label.textContent = isDark ? "白天模式" : "夜间模式";
-  const icon = els.themeBtn.querySelector("[data-lucide]");
-  if (icon) {
-    icon.setAttribute("data-lucide", isDark ? "sun" : "moon");
-    initIcons();
+
+  els.themeOptions.forEach((option) => {
+    option.setAttribute("aria-checked", option.dataset.themeOption === theme ? "true" : "false");
+  });
+
+  if (els.themeBtn) {
+    els.themeBtn.setAttribute("aria-label", `主题色：${THEMES[theme].label}，点击切换`);
   }
+
+  initIcons();
+}
+
+function toggleThemeMenu() {
+  const willOpen = els.themeMenu.hidden;
+  els.themeMenu.hidden = !willOpen;
+  els.themeBtn.setAttribute("aria-expanded", willOpen ? "true" : "false");
+}
+
+function closeThemeMenu() {
+  if (!els.themeMenu || els.themeMenu.hidden) return;
+  els.themeMenu.hidden = true;
+  els.themeBtn.setAttribute("aria-expanded", "false");
 }
 
 function loadWords() {
@@ -346,6 +401,7 @@ function loadTodayTasks(showMessage) {
   state.hiddenIds.clear();
   state.resultById.clear();
   state.draftById.clear();
+  state.expandedGroups.clear();
   saveWords();
 
   if (showMessage) {
@@ -416,9 +472,15 @@ function startDictation() {
   state.hiddenIds = new Set(pendingIds);
   state.resultById.clear();
   state.draftById.clear();
+
+  // 默写时先只展开第一个待写词所在的分类，其余保持收起
+  const firstPendingId = state.visibleIds.find((wordId) => state.hiddenIds.has(wordId));
+  const firstKey = groupKeyForWord(findWord(firstPendingId));
+  if (firstKey) state.expandedGroups.add(firstKey);
+
   render();
   setStatus("已进入默写：在英文位置书写，回车或点审查。");
-  focusFirstAnswer();
+  focusAnswerById(firstPendingId);
 }
 
 function submitAnswer(input) {
@@ -442,11 +504,12 @@ function submitAnswer(input) {
     state.hiddenIds.delete(id);
     state.resultById.set(id, "correct");
     state.draftById.delete(id);
+    const nextId = expandNextPendingGroup(id);
     saveWords();
     render();
     speak(word.english);
     setStatus(`${word.english} 正确，下次 ${formatDue(word.nextDueDate)} 复习`);
-    focusNextAnswer(id);
+    focusAnswerById(nextId);
     return;
   }
 
@@ -560,32 +623,76 @@ function getTaskGroups(words, today) {
 }
 
 function renderTaskGroup(group) {
+  const open = state.expandedGroups.has(group.key);
+  const bodyId = `group-body-${group.key}`;
+
   return `
-    <article class="task-card">
-      <header class="task-card-head">
-        <div>
-          <h3>${escapeHtml(group.title)}</h3>
-          <p>${escapeHtml(group.dateText)} · ${group.words.length} 个词</p>
-        </div>
-        <span class="task-badge">第 ${group.batchNo} 批</span>
-      </header>
-      <table class="word-table task-table">
-        <colgroup>
-          <col class="english-col" />
-          <col class="meaning-col" />
-        </colgroup>
-        <thead>
-          <tr>
-            <th scope="col">英文单词</th>
-            <th scope="col">中文释义</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${group.words.map(renderRow).join("")}
-        </tbody>
-      </table>
+    <article class="task-card ${open ? "is-open" : ""}" data-group-key="${escapeHtml(group.key)}">
+      <button class="task-card-head" type="button" data-toggle-group="${escapeHtml(group.key)}"
+        aria-expanded="${open}" aria-controls="${bodyId}">
+        <span class="task-card-title">
+          <span class="task-card-name">${escapeHtml(group.title)}</span>
+          <span class="task-card-meta">${escapeHtml(group.dateText)} · ${group.words.length} 个词</span>
+        </span>
+        <span class="task-card-side">
+          <span class="task-badge">第 ${group.batchNo} 批</span>
+          <i data-lucide="chevron-down" class="task-chevron" aria-hidden="true"></i>
+        </span>
+      </button>
+      <div class="task-card-body" id="${bodyId}" ${open ? "" : "hidden"}>
+        <table class="word-table task-table">
+          <colgroup>
+            <col class="english-col" />
+            <col class="meaning-col" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th scope="col">英文单词</th>
+              <th scope="col">中文释义</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${group.words.map(renderRow).join("")}
+          </tbody>
+        </table>
+      </div>
     </article>
   `;
+}
+
+function groupKeyForWord(word) {
+  if (!word) return "";
+  const meta = state.taskMetaById.get(word.id);
+  return meta ? `${meta.batchNo}-${meta.column}` : "";
+}
+
+function toggleTaskGroup(key) {
+  if (!key) return;
+  const open = !state.expandedGroups.has(key);
+  if (open) {
+    state.expandedGroups.add(key);
+  } else {
+    state.expandedGroups.delete(key);
+  }
+
+  const card = els.taskGroups.querySelector(`.task-card[data-group-key="${cssEscape(key)}"]`);
+  if (!card) return;
+  const head = card.querySelector("[data-toggle-group]");
+  const body = card.querySelector(".task-card-body");
+  card.classList.toggle("is-open", open);
+  if (head) head.setAttribute("aria-expanded", open ? "true" : "false");
+  if (body) body.hidden = !open;
+}
+
+function expandNextPendingGroup(currentId) {
+  if (state.mode !== "dictation") return "";
+  const ids = state.visibleIds;
+  const start = Math.max(0, ids.indexOf(currentId));
+  const ordered = [...ids.slice(start + 1), ...ids.slice(0, start)];
+  const nextId = ordered.find((wordId) => state.hiddenIds.has(wordId));
+  const key = groupKeyForWord(findWord(nextId));
+  if (key) state.expandedGroups.add(key);
+  return nextId || "";
 }
 
 function renderRow(word) {
@@ -987,19 +1094,13 @@ function formatDateDot(date) {
   return `${year}.${month}.${day}`;
 }
 
-function focusFirstAnswer() {
+function focusAnswerById(id) {
+  if (!id) return;
   window.requestAnimationFrame(() => {
-    const first = document.querySelector(".answer-input");
-    if (first) first.focus();
-  });
-}
-
-function focusNextAnswer(currentId) {
-  window.requestAnimationFrame(() => {
-    const inputs = [...document.querySelectorAll(".answer-input")];
-    const currentIndex = inputs.findIndex((input) => input.dataset.id === currentId);
-    const next = inputs[currentIndex + 1];
-    if (next) next.focus();
+    const input = document.querySelector(`.answer-input[data-id="${cssEscape(id)}"]`);
+    if (!input) return;
+    input.focus();
+    input.select();
   });
 }
 

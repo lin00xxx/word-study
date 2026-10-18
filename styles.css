@@ -1,52 +1,53 @@
 /* ==========================================================================
-   词表 · 黑白配色 · 三页布局（词库 / 今日 / 计划）
-   只用「纸白 / 墨黑」两级明度 + 中性灰层级表达结构；
-   唯一强调色是纯黑（夜间为纯白），对错反馈保留极低饱和的绿 / 红。
+   词表 · 六套主题色：黑 / 白 / 粉 / 黄 / 蓝 / 绿
+   主题挂在 <html data-theme="...">，切换只换 CSS 变量；
+   对错反馈保留极低饱和的绿 / 红，不跟随主题。
    ========================================================================== */
 
+/* 默认：奶油粉 */
 :root {
   color-scheme: light;
 
   /* 画布与纸张 */
-  --bg: #f1f1f1;
-  --bg-glow: #ffffff;
-  --paper: #ffffff;
-  --paper-2: #f7f7f7;
-  --paper-3: #efefef;
-  --bar: rgba(255, 255, 255, 0.88);
+  --bg: #fff7f8;
+  --bg-glow: #fffdfd;
+  --paper: #fffdfd;
+  --paper-2: #fdf1f3;
+  --paper-3: #f9e6ea;
+  --bar: rgba(255, 253, 253, 0.9);
 
   /* 线条 */
-  --line: #e4e4e4;
-  --line-soft: #ededed;
-  --line-mid: #cfcfcf;
-  --dashed: #c6c6c6;
+  --line: #f8e6ea;
+  --line-soft: #fcf0f2;
+  --line-mid: #e4c6cc;
+  --dashed: #ead0d5;
 
   /* 文字 */
-  --ink: #111111;
-  --ink-2: #313131;
-  --muted: #757575;
-  --faint: #9e9e9e;
+  --ink: #3b2a30;
+  --ink-2: #523a42;
+  --muted: #8b6d75;
+  --faint: #b89aa3;
 
-  /* 强调：纯黑（夜间反转为纯白） */
-  --accent: #111111;
-  --accent-hover: #2b2b2b;
-  --accent-ink: #ffffff;
-  --accent-soft: #f2f2f2;
+  /* 强调：奶油玫瑰粉 */
+  --accent: #9d5a68;
+  --accent-hover: #8b4c59;
+  --accent-ink: #fff9fa;
+  --accent-soft: #fceef1;
 
   /* 行状态 */
-  --row-hover: #f7f7f7;
-  --row-done: #f6f6f6;
+  --row-hover: #fff5f7;
+  --row-done: #fdf1f4;
 
   /* 对错反馈 */
-  --ok: #157a4d;
-  --ok-tint: #f2faf6;
-  --bad: #b03434;
-  --bad-tint: #fdf3f3;
+  --ok: #2f7d5a;
+  --ok-tint: #f2f8f4;
+  --bad: #b0433b;
+  --bad-tint: #fdf1f1;
 
   /* 阴影 / 遮罩 */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow: 0 20px 50px rgba(0, 0, 0, 0.06);
-  --ring: rgba(17, 17, 17, 0.12);
+  --shadow-sm: 0 1px 2px rgba(160, 90, 110, 0.06);
+  --shadow: 0 20px 50px rgba(160, 90, 110, 0.08);
+  --ring: rgba(157, 90, 104, 0.18);
 
   --radius-lg: 16px;
   --radius-md: 12px;
@@ -56,8 +57,8 @@
     "Microsoft YaHei", sans-serif;
 }
 
-/* 夜间：黑 + 灰 */
-body.dark-theme {
+/* 黑：夜间用的黑灰 */
+html[data-theme="ink"] {
   color-scheme: dark;
 
   --bg: #0a0a0a;
@@ -93,6 +94,162 @@ body.dark-theme {
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
   --shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
   --ring: rgba(255, 255, 255, 0.16);
+}
+
+/* 白：干净的纸白 + 墨黑强调 */
+html[data-theme="paper"] {
+  color-scheme: light;
+
+  --bg: #f4f4f4;
+  --bg-glow: #ffffff;
+  --paper: #ffffff;
+  --paper-2: #f7f7f7;
+  --paper-3: #efefef;
+  --bar: rgba(255, 255, 255, 0.88);
+
+  --line: #e4e4e4;
+  --line-soft: #ededed;
+  --line-mid: #cfcfcf;
+  --dashed: #c6c6c6;
+
+  --ink: #141414;
+  --ink-2: #333333;
+  --muted: #6f6f6f;
+  --faint: #a0a0a0;
+
+  --accent: #141414;
+  --accent-hover: #2b2b2b;
+  --accent-ink: #ffffff;
+  --accent-soft: #f2f2f2;
+
+  --row-hover: #f7f7f7;
+  --row-done: #f5f5f5;
+
+  --ok: #157a4d;
+  --ok-tint: #f2faf6;
+  --bad: #b03434;
+  --bad-tint: #fdf3f3;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow: 0 20px 50px rgba(0, 0, 0, 0.06);
+  --ring: rgba(20, 20, 20, 0.12);
+}
+
+/* 黄：蜂蜜暖黄 */
+html[data-theme="honey"] {
+  color-scheme: light;
+
+  --bg: #fbf4e2;
+  --bg-glow: #fffdf3;
+  --paper: #fffdf6;
+  --paper-2: #f9efd8;
+  --paper-3: #f3e4c4;
+  --bar: rgba(255, 252, 244, 0.88);
+
+  --line: #ecdcbb;
+  --line-soft: #f4e8cd;
+  --line-mid: #d9bf8b;
+  --dashed: #ddc596;
+
+  --ink: #3d3220;
+  --ink-2: #52432b;
+  --muted: #7d6a49;
+  --faint: #b3a180;
+
+  --accent: #d9b24a;
+  --accent-hover: #c9a23a;
+  --accent-ink: #241d06;
+  --accent-soft: #f7e9cc;
+
+  --row-hover: #fbf3e0;
+  --row-done: #faf1dd;
+
+  --ok: #2f7d5a;
+  --ok-tint: #f1f8f3;
+  --bad: #b0433b;
+  --bad-tint: #fcf2f0;
+
+  --shadow-sm: 0 1px 2px rgba(120, 90, 30, 0.08);
+  --shadow: 0 20px 50px rgba(120, 90, 30, 0.1);
+  --ring: rgba(217, 178, 74, 0.3);
+}
+
+/* 蓝：雾霾蓝 */
+html[data-theme="sky"] {
+  color-scheme: light;
+
+  --bg: #eef2f8;
+  --bg-glow: #f8fbff;
+  --paper: #fdfeff;
+  --paper-2: #eef3fa;
+  --paper-3: #e3ebf6;
+  --bar: rgba(250, 253, 255, 0.88);
+
+  --line: #dbe4f0;
+  --line-soft: #e8effa;
+  --line-mid: #bccbdd;
+  --dashed: #c3d0e2;
+
+  --ink: #1f2a3a;
+  --ink-2: #33415a;
+  --muted: #65758c;
+  --faint: #9aa8bc;
+
+  --accent: #4a6fa5;
+  --accent-hover: #3d5f92;
+  --accent-ink: #f7fbff;
+  --accent-soft: #e4ecf8;
+
+  --row-hover: #f2f6fc;
+  --row-done: #f1f6fb;
+
+  --ok: #2f7d5a;
+  --ok-tint: #f0f8f3;
+  --bad: #b0433b;
+  --bad-tint: #fcf2f0;
+
+  --shadow-sm: 0 1px 2px rgba(40, 60, 90, 0.07);
+  --shadow: 0 20px 50px rgba(40, 60, 90, 0.09);
+  --ring: rgba(74, 111, 165, 0.2);
+}
+
+/* 绿：鼠尾草绿 */
+html[data-theme="pine"] {
+  color-scheme: light;
+
+  --bg: #eff5f0;
+  --bg-glow: #f9fdf9;
+  --paper: #fcfffc;
+  --paper-2: #edf5ee;
+  --paper-3: #e0ece2;
+  --bar: rgba(250, 255, 251, 0.88);
+
+  --line: #d8e6da;
+  --line-soft: #e6f1e7;
+  --line-mid: #b9cfbc;
+  --dashed: #c0d5c3;
+
+  --ink: #1f2f24;
+  --ink-2: #314636;
+  --muted: #5f7666;
+  --faint: #96ad9b;
+
+  --accent: #3f7d5a;
+  --accent-hover: #346a4b;
+  --accent-ink: #f6fbf7;
+  --accent-soft: #e0f0e5;
+
+  --row-hover: #f1f8f2;
+  --row-done: #eff7f0;
+
+  --ok: #2f7d5a;
+  --ok-tint: #eff8f2;
+  --bad: #b0433b;
+  --bad-tint: #fcf2f0;
+
+  --shadow-sm: 0 1px 2px rgba(30, 60, 40, 0.07);
+  --shadow: 0 20px 50px rgba(30, 60, 40, 0.09);
+  --ring: rgba(63, 125, 90, 0.2);
 }
 
 * {
@@ -267,6 +424,96 @@ label {
 .icon-btn:hover {
   border-color: var(--line-mid);
   background: var(--paper-3);
+}
+
+/* ---------- 调色盘选单 ---------- */
+
+.theme-picker {
+  position: relative;
+  display: inline-flex;
+}
+
+.theme-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 40;
+  width: 156px;
+  display: grid;
+  gap: 2px;
+  padding: 7px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--paper);
+  box-shadow: var(--shadow);
+}
+
+.theme-option {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 9px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 0.86rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background 140ms ease;
+}
+
+.theme-option:hover {
+  background: var(--paper-2);
+}
+
+.theme-option[aria-checked="true"] {
+  background: var(--accent-soft);
+}
+
+.theme-swatch {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  border-radius: 999px;
+}
+
+.swatch-ink {
+  background: #0f0f0f;
+}
+
+.swatch-paper {
+  background: #ffffff;
+}
+
+.swatch-rose {
+  background: #9d5a68;
+}
+
+.swatch-honey {
+  background: #d9b24a;
+}
+
+.swatch-sky {
+  background: #4a6fa5;
+}
+
+.swatch-pine {
+  background: #3f7d5a;
+}
+
+.theme-check {
+  width: 14px;
+  height: 14px;
+  margin-left: auto;
+  color: var(--accent);
+  opacity: 0;
+}
+
+.theme-option[aria-checked="true"] .theme-check {
+  opacity: 1;
 }
 
 /* ---------- 页面容器 ---------- */
@@ -593,27 +840,62 @@ input::placeholder {
   box-shadow: var(--shadow-sm);
 }
 
+/* 分类头：整行可点，点击展开 / 收起 */
 .task-card-head {
+  width: 100%;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 18px;
+  padding: 13px 18px;
+  border: 0;
   background: var(--paper-2);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 160ms ease;
+}
+
+.task-card-head:hover {
+  background: var(--paper-3);
+}
+
+.task-card.is-open .task-card-head {
   border-bottom: 1px solid var(--line);
 }
 
-.task-card-head h3 {
-  margin: 0;
+.task-card-title {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.task-card-name {
   color: var(--ink);
   font-size: 0.95rem;
   font-weight: 700;
 }
 
-.task-card-head p {
-  margin: 4px 0 0;
+.task-card-meta {
   color: var(--muted);
   font-size: 0.78rem;
+}
+
+.task-card-side {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  flex: 0 0 auto;
+}
+
+.task-chevron {
+  color: var(--muted);
+  transition: transform 180ms ease;
+}
+
+.task-card.is-open .task-chevron {
+  transform: rotate(180deg);
 }
 
 .task-badge {
@@ -1043,7 +1325,7 @@ tbody tr.is-completed td:first-child {
     margin-right: 0;
   }
 
-  .icon-btn {
+  .theme-picker {
     margin-left: auto;
   }
 
