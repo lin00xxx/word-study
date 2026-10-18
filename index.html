@@ -4,6 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f1f1f1" id="themeColorMeta" />
   <title>词表</title>
   <link rel="stylesheet" href="./styles.css" />
   <script defer src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
@@ -11,138 +12,200 @@
 </head>
 
 <body>
-  <main class="app-shell">
-    <section class="top-panel" aria-label="单词导入和操作">
-      <div class="brand-row">
-        <div>
-          <p class="eyebrow">Ebbinghaus Planner</p>
-          <h1>词表</h1>
+  <header class="app-bar">
+    <div class="app-bar-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">词</span>
+        <span class="brand-text">
+          <span class="eyebrow">Ebbinghaus Planner</span>
+          <strong class="brand-name">词表</strong>
+        </span>
+      </div>
+
+      <nav class="app-nav" aria-label="页面切换">
+        <button class="nav-btn is-active" type="button" data-screen="import" aria-current="page">词库</button>
+        <button class="nav-btn" type="button" data-screen="tasks">今日</button>
+        <button class="nav-btn" type="button" data-screen="plan">计划</button>
+      </nav>
+
+      <button id="themeBtn" class="icon-btn" type="button" aria-pressed="false" aria-label="切换夜间模式">
+        <i data-lucide="moon" aria-hidden="true"></i>
+      </button>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <!-- ============ 词库 ============ -->
+    <section class="screen" id="importScreen" data-screen="import">
+      <div class="page-head">
+        <div class="page-head-text">
+          <p class="eyebrow">Library</p>
+          <h1>词库</h1>
+          <p class="page-sub">粘贴或导入词表，系统每天安排 30 个新词，并加入到期复习。</p>
         </div>
-        <div class="stats" aria-live="polite">
-          <span id="totalCount">0 词</span>
-          <span id="todayCount">今日 0</span>
-          <span id="doneCount">已完成 0</span>
-          <span id="dueCount">待复习 0</span>
+        <div class="page-actions">
+          <button id="todayBtn" class="primary-btn" type="button">
+            <i data-lucide="calendar-check" aria-hidden="true"></i>
+            <span>加载今日任务</span>
+          </button>
         </div>
       </div>
 
-      <div class="input-grid">
-        <label class="paste-box" for="wordInput">
-          <span>批量粘贴词表</span>
-          <textarea id="wordInput" spellcheck="false"
-            placeholder="serene 宁静的&#10;hesitate 犹豫&#10;reliable 可靠的"></textarea>
-        </label>
+      <div class="stat-grid">
+        <div class="stat-card">
+          <span class="stat-label">总词数</span>
+          <span class="stat-value"><strong id="totalCount">0</strong><em>词</em></span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">今日任务</span>
+          <span class="stat-value"><strong id="todayCount">0</strong><em>词</em></span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">今日已完成</span>
+          <span class="stat-value"><strong id="doneCount">0</strong><em>词</em></span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">待复习</span>
+          <span class="stat-value"><strong id="dueCount">0</strong><em>词</em></span>
+        </div>
+      </div>
 
-        <div class="control-panel">
-          <label class="file-drop" for="fileInput">
-            <i data-lucide="file-up"></i>
-            <span>导入 txt/csv 文件</span>
-            <input id="fileInput" type="file" accept=".txt,.csv,.tsv,text/plain,text/csv" />
-          </label>
-
-          <div class="button-grid">
-            <button id="importBtn" class="secondary-btn" type="button">
-              <i data-lucide="upload"></i>
+      <div class="import-grid">
+        <section class="panel paste-panel" aria-labelledby="pasteTitle">
+          <div class="panel-head">
+            <div>
+              <h2 id="pasteTitle">批量粘贴词表</h2>
+              <p>每行一条，英文在前、中文释义在后</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <label class="visually-hidden" for="wordInput">批量粘贴词表</label>
+            <textarea id="wordInput" spellcheck="false"
+              placeholder="serene 宁静的&#10;hesitate 犹豫&#10;reliable 可靠的"></textarea>
+          </div>
+          <div class="panel-foot">
+            <p class="hint">逗号、制表符分隔也能识别</p>
+            <button id="importBtn" class="primary-btn" type="button">
+              <i data-lucide="upload" aria-hidden="true"></i>
               <span>导入粘贴内容</span>
             </button>
-            <button id="todayBtn" class="secondary-btn" type="button">
-              <i data-lucide="calendar-check"></i>
-              <span>加载今日任务</span>
-            </button>
-            <button id="planBtn" class="secondary-btn" type="button">
-              <i data-lucide="table-2"></i>
-              <span>计划表</span>
-            </button>
-            <button id="themeBtn" class="secondary-btn" type="button" aria-pressed="false">
-              <i data-lucide="moon"></i>
-              <span>夜间模式</span>
-            </button>
           </div>
-        </div>
-      </div>
+        </section>
 
-      <div class="status-row">
-        <span id="modeLabel">普通浏览</span>
-        <span id="statusText">每天自动安排 30 个新词，并加入到期复习词</span>
-      </div>
-    </section>
-
-    <section id="taskPanel" class="table-panel task-panel" aria-label="今日任务" hidden>
-      <div class="task-toolbar">
-        <div>
-          <p class="eyebrow">Today</p>
-          <h2>今日任务</h2>
-          <p id="taskSummary">点击加载今日任务后显示</p>
-        </div>
-        <button id="taskDictationBtn" class="gold-btn" type="button">
-          <i data-lucide="pen-line"></i>
-          <span>开始默写</span>
-        </button>
-      </div>
-      <div id="taskGroups" class="task-groups"></div>
-    </section>
-  </main>
-
-  <div id="planModal" class="modal" aria-hidden="true">
-    <div class="modal-backdrop" data-close-plan></div>
-    <section class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="planTitle">
-      <header class="modal-header">
-        <div>
-          <p class="eyebrow">Study Schedule</p>
-          <h2 id="planTitle">艾宾浩斯计划表</h2>
-        </div>
-        <button id="closePlanBtn" class="icon-btn" type="button" aria-label="关闭计划表">
-          <i data-lucide="x"></i>
-        </button>
-      </header>
-
-      <div class="modal-summary">
-        <div class="plan-item">
-          <span>总词数</span>
-          <strong id="modalTotalCount">0</strong>
-        </div>
-        <div class="plan-item">
-          <span>批次数</span>
-          <strong id="modalBatchCount">0</strong>
-        </div>
-        <div class="plan-item">
-          <span>预计结束</span>
-          <strong id="modalEndDate">--</strong>
-        </div>
-        <div class="plan-item">
-          <span>今日剩余</span>
-          <strong id="modalRemainingCount">0</strong>
-        </div>
-      </div>
-
-      <div class="modal-body">
-        <div class="schedule-wrap">
-          <table class="schedule-table">
-            <thead>
-              <tr>
-                <th>No.</th>
-                <th>Date</th>
-                <th>First</th>
-                <th>Day1</th>
-                <th>Day2</th>
-                <th>Day4</th>
-                <th>Day7</th>
-                <th>Day15</th>
-              </tr>
-            </thead>
-            <tbody id="scheduleBody"></tbody>
-          </table>
-        </div>
-
-        <section class="word-list-panel" aria-label="导入单词列表">
-          <div class="section-title">
-            <h3>导入单词</h3>
-            <p id="wordListSummary">按每天 30 个自动分批</p>
+        <section class="panel file-panel" aria-labelledby="fileTitle">
+          <div class="panel-head">
+            <div>
+              <h2 id="fileTitle">导入文件</h2>
+              <p>支持 txt / csv / tsv</p>
+            </div>
           </div>
-          <div id="batchList" class="batch-list"></div>
+          <div class="panel-body">
+            <label class="file-drop" for="fileInput">
+              <i data-lucide="file-up" aria-hidden="true"></i>
+              <strong>选择文件</strong>
+              <span>点这里挑选本地词表</span>
+              <input id="fileInput" type="file" accept=".txt,.csv,.tsv,text/plain,text/csv" />
+            </label>
+            <p class="hint">自动拆分英文与中文释义；重复的英文会更新释义，不重复计数。</p>
+          </div>
         </section>
       </div>
     </section>
+
+    <!-- ============ 今日 ============ -->
+    <section class="screen" id="tasksScreen" data-screen="tasks" hidden>
+      <div class="page-head">
+        <div class="page-head-text">
+          <p class="eyebrow">Today</p>
+          <h1>今日任务</h1>
+          <p class="page-sub" id="taskSummary">点击「加载今日任务」后显示</p>
+        </div>
+        <div class="page-actions">
+          <span class="mode-chip" id="modeLabel">普通浏览</span>
+          <button id="taskDictationBtn" class="primary-btn" type="button">
+            <i data-lucide="pen-line" aria-hidden="true"></i>
+            <span>开始默写</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="taskGroups" class="task-groups"></div>
+    </section>
+
+    <!-- ============ 计划 ============ -->
+    <section class="screen" id="planScreen" data-screen="plan" hidden>
+      <div class="page-head">
+        <div class="page-head-text">
+          <p class="eyebrow">Schedule</p>
+          <h1>计划表</h1>
+          <p class="page-sub">艾宾浩斯复习节奏：First / Day1 / Day2 / Day4 / Day7 / Day15</p>
+        </div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <span class="stat-label">总词数</span>
+          <span class="stat-value"><strong id="planTotalCount">0</strong><em>词</em></span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">批次数</span>
+          <span class="stat-value"><strong id="planBatchCount">0</strong><em>批</em></span>
+        </div>
+        <div class="stat-card is-wide">
+          <span class="stat-label">预计结束</span>
+          <span class="stat-value"><strong id="planEndDate" class="is-date">--</strong></span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">今日剩余</span>
+          <span class="stat-value"><strong id="planRemainingCount">0</strong><em>词</em></span>
+        </div>
+      </div>
+
+      <section class="panel" aria-labelledby="scheduleTitle">
+        <div class="panel-head">
+          <div>
+            <h2 id="scheduleTitle">批次安排</h2>
+            <p>每个批次按固定的六个节点复习，表格里是批次号</p>
+          </div>
+        </div>
+        <div class="panel-body is-flush">
+          <div class="schedule-wrap">
+            <table class="schedule-table">
+              <thead>
+                <tr>
+                  <th scope="col">No.</th>
+                  <th scope="col">Date</th>
+                  <th scope="col">First</th>
+                  <th scope="col">Day1</th>
+                  <th scope="col">Day2</th>
+                  <th scope="col">Day4</th>
+                  <th scope="col">Day7</th>
+                  <th scope="col">Day15</th>
+                </tr>
+              </thead>
+              <tbody id="scheduleBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="wordListTitle">
+        <div class="panel-head">
+          <div>
+            <h2 id="wordListTitle">导入单词</h2>
+            <p id="wordListSummary">按每天 30 个自动分批</p>
+          </div>
+        </div>
+        <div class="panel-body is-flush">
+          <div id="batchList" class="batch-list"></div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <div class="status-bar" role="status" aria-live="polite">
+    <span class="status-dot" aria-hidden="true"></span>
+    <span id="statusText">每天自动安排 30 个新词，并加入到期复习词</span>
   </div>
 </body>
 

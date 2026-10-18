@@ -47,20 +47,21 @@ function cacheElements() {
   els.fileInput = document.querySelector("#fileInput");
   els.importBtn = document.querySelector("#importBtn");
   els.todayBtn = document.querySelector("#todayBtn");
-  els.planBtn = document.querySelector("#planBtn");
   els.themeBtn = document.querySelector("#themeBtn");
+  els.themeColorMeta = document.querySelector("#themeColorMeta");
+  els.navBtns = [...document.querySelectorAll(".nav-btn")];
+  els.importScreen = document.querySelector("#importScreen");
+  els.tasksScreen = document.querySelector("#tasksScreen");
+  els.planScreen = document.querySelector("#planScreen");
   els.taskDictationBtn = document.querySelector("#taskDictationBtn");
-  els.taskPanel = document.querySelector("#taskPanel");
   els.taskGroups = document.querySelector("#taskGroups");
   els.taskSummary = document.querySelector("#taskSummary");
-  els.planModal = document.querySelector("#planModal");
-  els.closePlanBtn = document.querySelector("#closePlanBtn");
   els.scheduleBody = document.querySelector("#scheduleBody");
   els.batchList = document.querySelector("#batchList");
-  els.modalTotalCount = document.querySelector("#modalTotalCount");
-  els.modalBatchCount = document.querySelector("#modalBatchCount");
-  els.modalEndDate = document.querySelector("#modalEndDate");
-  els.modalRemainingCount = document.querySelector("#modalRemainingCount");
+  els.planTotalCount = document.querySelector("#planTotalCount");
+  els.planBatchCount = document.querySelector("#planBatchCount");
+  els.planEndDate = document.querySelector("#planEndDate");
+  els.planRemainingCount = document.querySelector("#planRemainingCount");
   els.wordListSummary = document.querySelector("#wordListSummary");
   els.totalCount = document.querySelector("#totalCount");
   els.todayCount = document.querySelector("#todayCount");
@@ -74,16 +75,10 @@ function bindEvents() {
   els.importBtn.addEventListener("click", () => importWordsFromText(els.input.value, "粘贴内容"));
   els.fileInput.addEventListener("change", importWordsFromFile);
   els.todayBtn.addEventListener("click", () => loadTodayTasks(true));
-  els.planBtn.addEventListener("click", openPlanModal);
   els.themeBtn.addEventListener("click", toggleTheme);
   els.taskDictationBtn.addEventListener("click", startDictation);
-  els.closePlanBtn.addEventListener("click", closePlanModal);
-  els.planModal.addEventListener("click", (event) => {
-    if (event.target.closest("[data-close-plan]")) closePlanModal();
-  });
-
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") closePlanModal();
+  els.navBtns.forEach((button) => {
+    button.addEventListener("click", () => switchScreen(button.dataset.screen));
   });
 
   document.addEventListener("input", (event) => {
@@ -144,13 +139,19 @@ function toggleTheme() {
 }
 
 function applyTheme() {
-  document.body.classList.toggle("dark-theme", state.theme === "dark");
+  const isDark = state.theme === "dark";
+  document.body.classList.toggle("dark-theme", isDark);
+  if (els.themeColorMeta) {
+    els.themeColorMeta.setAttribute("content", isDark ? "#0a0a0a" : "#f1f1f1");
+  }
   if (!els.themeBtn) return;
-  els.themeBtn.setAttribute("aria-pressed", state.theme === "dark" ? "true" : "false");
-  els.themeBtn.querySelector("span").textContent = state.theme === "dark" ? "白天模式" : "夜间模式";
+  els.themeBtn.setAttribute("aria-pressed", isDark ? "true" : "false");
+  els.themeBtn.setAttribute("aria-label", isDark ? "切换到白天模式" : "切换到夜间模式");
+  const label = els.themeBtn.querySelector("span");
+  if (label) label.textContent = isDark ? "白天模式" : "夜间模式";
   const icon = els.themeBtn.querySelector("[data-lucide]");
   if (icon) {
-    icon.setAttribute("data-lucide", state.theme === "dark" ? "sun" : "moon");
+    icon.setAttribute("data-lucide", isDark ? "sun" : "moon");
     initIcons();
   }
 }
@@ -467,17 +468,42 @@ function submitAnswer(input) {
   }
 }
 
+function switchScreen(screen) {
+  if (!["import", "tasks", "plan"].includes(screen) || state.screen === screen) return;
+  state.screen = screen;
+  render();
+  window.scrollTo(0, 0);
+}
+
 function render() {
   const today = todayString();
   const visibleWords = getVisibleWords();
   const plan = getPlanStats(today);
+  const screens = {
+    import: els.importScreen,
+    tasks: els.tasksScreen,
+    plan: els.planScreen
+  };
 
-  els.totalCount.textContent = `${state.words.length} 词`;
-  els.todayCount.textContent = `今日 ${plan.total}`;
-  els.doneCount.textContent = `已完成 ${plan.completed}`;
-  els.dueCount.textContent = `待复习 ${countDueReview(today)}`;
-  els.modeLabel.textContent = state.mode === "dictation" ? "默写模式" : state.screen === "tasks" ? "今日任务" : "导入词表";
-  els.taskPanel.hidden = state.screen !== "tasks";
+  Object.entries(screens).forEach(([name, node]) => {
+    if (node) node.hidden = state.screen !== name;
+  });
+
+  els.navBtns.forEach((button) => {
+    const isActive = button.dataset.screen === state.screen;
+    button.classList.toggle("is-active", isActive);
+    if (isActive) {
+      button.setAttribute("aria-current", "page");
+    } else {
+      button.removeAttribute("aria-current");
+    }
+  });
+
+  els.totalCount.textContent = state.words.length;
+  els.todayCount.textContent = plan.total;
+  els.doneCount.textContent = plan.completed;
+  els.dueCount.textContent = countDueReview(today);
+  els.modeLabel.textContent = state.mode === "dictation" ? "默写模式" : "普通浏览";
   els.taskDictationBtn.disabled = visibleWords.length === 0;
   els.taskSummary.textContent = buildTaskSummary(plan);
 
@@ -485,7 +511,10 @@ function render() {
     renderTaskGroups(visibleWords, today);
   }
 
-  renderPlanModal();
+  if (state.screen === "plan") {
+    renderPlanPage();
+  }
+
   initIcons();
 }
 
@@ -698,26 +727,15 @@ function dueLabel(word) {
   return `下次 ${formatDue(word.nextDueDate)}`;
 }
 
-function openPlanModal() {
-  renderPlanModal();
-  els.planModal.classList.add("is-open");
-  els.planModal.setAttribute("aria-hidden", "false");
-}
-
-function closePlanModal() {
-  els.planModal.classList.remove("is-open");
-  els.planModal.setAttribute("aria-hidden", "true");
-}
-
-function renderPlanModal() {
+function renderPlanPage() {
   const today = todayString();
   const batches = buildScheduleBatches(today);
   const scheduleRows = buildScheduleRows(batches);
 
-  els.modalTotalCount.textContent = `${state.words.length}`;
-  els.modalBatchCount.textContent = `${batches.length}`;
-  els.modalEndDate.textContent = batches.length ? formatDateDot(batches[batches.length - 1].finalDate) : "--";
-  els.modalRemainingCount.textContent = `${countDueReview(today)}`;
+  els.planTotalCount.textContent = state.words.length;
+  els.planBatchCount.textContent = batches.length;
+  els.planEndDate.textContent = batches.length ? formatDateDot(batches[batches.length - 1].finalDate) : "--";
+  els.planRemainingCount.textContent = countDueReview(today);
   els.wordListSummary.textContent = `共 ${state.words.length} 个词，按每天 ${DAILY_NEW_LIMIT} 个分批`;
   els.scheduleBody.innerHTML = scheduleRows.length ? scheduleRows.map(renderScheduleRow).join("") : renderEmptyScheduleRow();
   els.batchList.innerHTML = batches.length ? batches.map(renderBatchCard).join("") : `<div class="empty-state">暂无词表，先导入文件或粘贴内容。</div>`;
